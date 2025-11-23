@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control | Memo Project</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☀️</text></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <div id="app" class="main-container">
+        
+        <header class="sunny-card header-bar">
+            <div class="logo-area">
+                <h1>☀️ Memo Control</h1>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link active">CONTROL</a>
+                <a href="monitor.html" class="nav-link">MONITOR</a>
+            </nav>
+            <div class="unit-selector">
+                <select v-model="unitId">
+                    <option>Memo_Bot_1</option>
+                    <option>Memo_Bot_2</option>
+                </select>
+            </div>
+        </header>
+
+        <div v-if="activeAlert" class="alert-banner">
+            <h2>⚠️ OBSTÁCULO DETECTADO: {{ activeAlertVal }} cm</h2>
+        </div>
+
+        <div class="grid-layout">
+            
+            <div class="left-col">
+                <div class="sunny-card control-panel">
+                    <h3>🕹️ Mando Manual</h3>
+                    
+                    <div class="d-pad">
+                        <button class="btn" @click="send('Q')">↖</button>
+                        <button class="btn btn-primary" @click="send('F')">▲</button>
+                        <button class="btn" @click="send('E')">↗</button>
+                        
+                        <button class="btn btn-primary" @click="send('L')">◀</button>
+                        <button class="btn btn-danger" @click="send('X')">STOP</button>
+                        <button class="btn btn-primary" @click="send('R')">▶</button>
+                        
+                        <button class="btn" @click="send('Z')">↙</button>
+                        <button class="btn btn-primary" @click="send('B')">▼</button>
+                        <button class="btn" @click="send('C')">↘</button>
+
+                        <button class="btn btn-action" @click="send('Y')">↺ 360</button>
+                        <div class="empty-space"></div>
+                        <button class="btn btn-action" @click="send('U')">360 ↻</button>
+                    </div>
+
+                    <div class="speed-control">
+                        <label>VELOCIDAD</label>
+                        <div class="speed-buttons">
+                            <button class="btn-speed" :class="{active: speed === 130}" @click="speed = 130">Lento</button>
+                            <button class="btn-speed" :class="{active: speed === 180}" @click="speed = 180">Normal</button>
+                            <button class="btn-speed" :class="{active: speed === 255}" @click="speed = 255">Rápido</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sunny-card logs-panel">
+                    <div class="card-header">
+                        <h3>📍 Últimos Logs</h3>
+                        <button class="btn-refresh-text" @click="loadLogs">Actualizar ↻</button>
+                    </div>
+                    <div class="logs-window small-window">
+                        <table>
+                            <thead><tr><th>Hora</th><th>Cmd</th><th>Val</th></tr></thead>
+                            <tbody>
+                                <tr v-for="l in navLogs" :key="l.log_id">
+                                    <td>{{ formatTime(l.recorded_at) }}</td>
+                                    <td><span class="tag-nav">{{ l.action_code }}</span></td>
+                                    <td class="val-cell">{{ l.metric_value }}</td>
+                                </tr>
+                                <tr v-if="navLogs.length === 0">
+                                    <td colspan="3" style="text-align:center; padding:10px; color:#aaa;">Sin datos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <div class="sunny-card mission-planner">
+                    <h3>🚀 Misiones</h3>
+                    <div class="input-group">
+                        <input v-model="missionName" placeholder="Nombre de Misión">
+                    </div>
+                    <div class="input-group">
+                        <input v-model="missionSeq" placeholder="Secuencia (F:1000|R:500)" class="mono-input">
+                    </div>
+                    <button class="btn-full btn-warm" @click="saveMission">GUARDAR MISIÓN</button>
+
+                    <hr class="divider">
+
+                    <div class="mission-selector">
+                        <div class="selector-header">
+                            <label>Ejecutar Misión</label>
+                            <span class="refresh-link" @click="loadMissions">↻</span>
+                        </div>
+                        
+                        <select v-model="selectedMissionId">
+                            <option value="0" disabled>Selecciona...</option>
+                            <option v-for="m in savedMissions" :value="m.mission_id">#{{m.mission_id}} {{ m.title }}</option>
+                        </select>
+
+                        <button class="btn-full btn-run" @click="runSelected" :disabled="selectedMissionId == 0">
+                            ▶ INICIAR MISIÓN
+                        </button>
+                        
+                        <button class="btn-delete" @click="deleteMission" v-if="selectedMissionId != 0">🗑️ Eliminar Misión</button>
+                    </div>
+                </div>
+                
+                <div class="code-reference">
+                    <h4>Referencia</h4>
+                    <ul class="ref-list">
+                        <li><span class="key">F / B</span> <span class="desc">Avance / Retroceso</span></li>
+                        <li><span class="key">L / R</span> <span class="desc">Giro sobre Eje</span></li>
+                        <li><span class="key">Q / E</span> <span class="desc">Curva Adelante</span></li>
+                        <li><span class="key">Y / U</span> <span class="desc">Giro 360°</span></li>
+                        <li><span class="key">X</span> <span class="desc">Detener</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <p>Desarrollado por <strong>Guillermo Acosta</strong> | Proyecto IoT 2025</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
