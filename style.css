@@ -145,4 +145,3 @@ input, select { width: 100%; padding: 10px; border: 2px solid #eee; border-radiu
 .step-desc { font-size: 0.8rem; font-weight: 600; color: var(--text-main); flex-grow: 1; }
 .step-remove { cursor: pointer; font-size: 0.8rem; opacity: 0.6; transition: 0.2s; }
 .step-remove:hover { opacity: 1; transform: scale(1.2); }
-
