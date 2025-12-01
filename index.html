@@ -6,7 +6,6 @@
     <title>Control | Memo Project</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☀️</text></svg>">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -53,9 +52,9 @@
                         <button class="btn btn-primary" @click="send('B')">▼</button>
                         <button class="btn" @click="send('C')">↘</button>
 
-                        <button class="btn btn-action" @click="send('Y')">↺ 360</button>
+                        <button class="btn btn-action" @click="send('Y')">↺</button>
                         <div class="empty-space"></div>
-                        <button class="btn btn-action" @click="send('U')">360 ↻</button>
+                        <button class="btn btn-action" @click="send('U')">↻</button>
                     </div>
 
                     <div class="speed-control">
@@ -93,20 +92,48 @@
 
             <div class="right-col">
                 <div class="sunny-card mission-planner">
-                    <h3>🚀 Misiones</h3>
+                    <h3>🚀 Constructor de Misiones</h3>
+                    
                     <div class="input-group">
-                        <input v-model="missionName" placeholder="Nombre de Misión">
+                        <input v-model="missionName" placeholder="Nombre de la Misión (Ej: Patrulla)">
                     </div>
-                    <div class="input-group">
-                        <input v-model="missionSeq" placeholder="Secuencia (F:1000|R:500)" class="mono-input">
+
+                    <div class="step-builder">
+                        <div style="display:flex; gap:5px; margin-bottom:5px;">
+                            <select v-model="newStepCmd" style="flex:2;">
+                                <option value="F">Adelante (F)</option>
+                                <option value="B">Atrás (B)</option>
+                                <option value="L">Giro Izq (L)</option>
+                                <option value="R">Giro Der (R)</option>
+                                <option value="X">Pausa (X)</option>
+                                <option value="Q">Curva Avance Izq (Q)</option>
+                                <option value="E">Curva Avance Der (E)</option>
+                            </select>
+                            <input type="number" v-model="newStepTime" placeholder="ms" style="flex:1;" min="100" step="100">
+                        </div>
+                        <button class="btn-add-step" @click="addStep">➕ Agregar Paso</button>
                     </div>
-                    <button class="btn-full btn-warm" @click="saveMission">GUARDAR MISIÓN</button>
+
+                    <div class="steps-container">
+                        <div v-if="visualSteps.length === 0" style="text-align:center; color:#aaa; padding:10px; font-size:0.8rem;">
+                            Agrega pasos para construir tu misión
+                        </div>
+                        <div v-for="(step, index) in visualSteps" :key="index" class="step-item">
+                            <span class="step-number">{{ index + 1 }}</span>
+                            <span class="step-desc"><strong>{{ mapAction(step.cmd) }}</strong> por {{ step.time }}ms</span>
+                            <span class="step-remove" @click="removeStep(index)">❌</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-full btn-warm" @click="saveMission" :disabled="visualSteps.length === 0">
+                        💾 GUARDAR MISIÓN
+                    </button>
 
                     <hr class="divider">
 
                     <div class="mission-selector">
                         <div class="selector-header">
-                            <label>Ejecutar Misión</label>
+                            <label>Misiones Guardadas</label>
                             <span class="refresh-link" @click="loadMissions">↻</span>
                         </div>
                         
@@ -116,22 +143,11 @@
                         </select>
 
                         <button class="btn-full btn-run" @click="runSelected" :disabled="selectedMissionId == 0">
-                            ▶ INICIAR MISIÓN
+                            ▶ EJECUTAR MISIÓN
                         </button>
                         
-                        <button class="btn-delete" @click="deleteMission" v-if="selectedMissionId != 0">🗑️ Eliminar Misión</button>
+                        <button class="btn-delete" @click="deleteMission" v-if="selectedMissionId != 0">🗑️ Borrar</button>
                     </div>
-                </div>
-                
-                <div class="code-reference">
-                    <h4>Referencia</h4>
-                    <ul class="ref-list">
-                        <li><span class="key">F / B</span> <span class="desc">Avance / Retroceso</span></li>
-                        <li><span class="key">L / R</span> <span class="desc">Giro sobre Eje</span></li>
-                        <li><span class="key">Q / E</span> <span class="desc">Curva Adelante</span></li>
-                        <li><span class="key">Y / U</span> <span class="desc">Giro 360°</span></li>
-                        <li><span class="key">X</span> <span class="desc">Detener</span></li>
-                    </ul>
                 </div>
             </div>
         </div>
