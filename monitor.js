@@ -5,54 +5,31 @@ createApp({
         return {
             apiUrl: 'https://memo.micarrirobot.cc',
             unitId: 'Memo_Bot_1',
-            
-            allLogs: [],
-            navLogs: [],  // CORREGIDO: Antes se llamaba moveLogs
-            warnLogs: [], // CORREGIDO: Antes se llamaba obsLogs
-            lastMove: null 
+            navLogs: [], warnLogs: [], lastMove: null 
         }
     },
-    mounted() {
-        this.loadData();
-        // Actualizar automáticamente cada 2 segundos
-        setInterval(this.loadData, 2000);
-    },
+    mounted() { this.loadData(); setInterval(this.loadData, 2000); },
     methods: {
         async loadData() {
             try {
                 const res = await fetch(`${this.apiUrl}/ctrl/logs?unit_id=${this.unitId}`);
                 if (res.ok) {
-                    this.allLogs = await res.json();
+                    const all = await res.json();
+                    // LIMITAR A 5
+                    this.navLogs = all.filter(l => l.category === 'NAV').slice(0, 5);
+                    this.warnLogs = all.filter(l => l.category === 'WARN').slice(0, 5);
                     
-                    // 1. Separar Bitácora de Navegación (NAV)
-                    // Usamos el nombre 'navLogs' que espera el HTML
-                    this.navLogs = this.allLogs.filter(l => l.category === 'NAV');
-                    
-                    // 2. Separar Registro de Alertas (WARN)
-                    // Usamos el nombre 'warnLogs' que espera el HTML
-                    this.warnLogs = this.allLogs.filter(l => l.category === 'WARN');
-
-                    // 3. Determinar Último Movimiento
-                    if (this.navLogs.length > 0) {
-                        this.lastMove = this.navLogs[0]; 
-                    }
+                    if (this.navLogs.length > 0) this.lastMove = this.navLogs[0];
                 }
-            } catch (e) { console.error("Error conectando:", e); }
+            } catch (e) {}
         },
-
         formatTime(d) {
             if (!d) return '-';
-            let timeString = d;
-            if (!timeString.endsWith("Z")) timeString += "Z";
-            return new Date(timeString).toLocaleTimeString('es-ES');
+            let t = d; if (!t.endsWith("Z")) t += "Z";
+            return new Date(t).toLocaleTimeString('es-ES');
         },
-
         mapAction(code) {
-            const dic = {
-                'F': 'AVANCE', 'B': 'RETROCESO', 'L': 'GIRO IZQ', 
-                'R': 'GIRO DER', 'X': 'DETENIDO', 'S': 'STOP',
-                'Q': 'CURVA IZQ', 'E': 'CURVA DER'
-            };
+            const dic = {'F':'AVANCE', 'B':'RETROCESO', 'L':'GIRO IZQ', 'R':'GIRO DER', 'X':'STOP', 'Q':'CURVA I', 'E':'CURVA D', 'Y':'360 I', 'U':'360 D'};
             return dic[code] || code;
         }
     }
