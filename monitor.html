@@ -4,33 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor | Memo Project</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☀️</text></svg>">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-    <style>
-        /* Estilos específicos para tarjetas de datos grandes */
-        .status-card {
-            text-align: center; padding: 40px; background: white; border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(255, 159, 67, 0.2); margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.8); animation: fadeIn 1s ease;
-        }
-        .big-icon { font-size: 4rem; display: block; margin-bottom: 10px; }
-        .status-value { font-size: 2.5rem; font-weight: 800; color: #2d3436; margin: 5px 0; }
-        .status-time { font-size: 0.9rem; color: #e17055; font-weight: 600; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
     <div id="app" class="main-container">
         
         <header class="sunny-card header-bar">
-            <div class="logo-area">
-                <h1>📊 Memo Monitor</h1>
-            </div>
+            <div class="logo-area"><h1>📊 Monitor</h1></div>
             <nav class="nav-menu">
                 <a href="index.html" class="nav-link">CONTROL</a>
                 <a href="monitor.html" class="nav-link active">MONITOR</a>
@@ -44,13 +27,13 @@
         </header>
 
         <div class="sunny-card status-card">
-            <div v-if="lastMove">
+            <div class="status-content" v-if="lastMove">
                 <span class="big-icon">📡</span>
-                <div class="stat-label" style="color:#aaa; font-weight:700; letter-spacing:1px;">ACTIVIDAD ACTUAL</div>
+                <div class="stat-label">ÚLTIMA ACCIÓN</div>
                 <div class="status-value">{{ mapAction(lastMove.action_code) }}</div>
                 <div class="status-time">{{ formatTime(lastMove.recorded_at) }}</div>
             </div>
-            <div v-else>
+            <div class="status-content" v-else>
                 <span class="big-icon">💤</span>
                 <div class="status-value">Sin actividad</div>
                 <div class="stat-label">Esperando datos...</div>
@@ -59,17 +42,15 @@
 
         <div class="grid-layout">
             <div class="sunny-card logs-panel">
-                <div class="card-header">
-                    <h3>📍 Bitácora de Navegación</h3>
-                </div>
-                <div class="logs-window" style="height: 350px;">
+                <h3>📍 Movimientos (Últimos 5)</h3>
+                <div class="logs-window">
                     <table>
-                        <thead><tr><th>Hora</th><th>Acción</th><th>Valor</th></tr></thead>
+                        <thead><tr><th>Hora</th><th>Acción</th><th>Val</th></tr></thead>
                         <tbody>
                             <tr v-for="l in navLogs" :key="l.log_id">
                                 <td>{{ formatTime(l.recorded_at) }}</td>
                                 <td><span class="tag-nav">{{ mapAction(l.action_code) }}</span></td>
-                                <td class="val-cell">{{ l.metric_value }}</td>
+                                <td>{{ l.metric_value }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -77,16 +58,14 @@
             </div>
 
             <div class="sunny-card obstacle-panel">
-                <div class="card-header">
-                    <h3 style="color: #d63031;">🚨 Registro de Alertas</h3>
-                </div>
-                <div class="logs-window" style="height: 350px;">
+                <h3 style="color:#d63031;">🚨 Obstáculos (Últimos 5)</h3>
+                <div class="logs-window">
                     <table>
-                        <thead><tr><th>Hora</th><th>Evento</th><th>Distancia</th></tr></thead>
+                        <thead><tr><th>Hora</th><th>Evento</th><th>Dist</th></tr></thead>
                         <tbody>
                             <tr v-for="o in warnLogs" :key="o.log_id">
                                 <td>{{ formatTime(o.recorded_at) }}</td>
-                                <td><span class="tag-warn">OBSTÁCULO</span></td>
+                                <td><span class="tag-warn">DETECCIÓN</span></td>
                                 <td class="alert-val">{{ o.metric_value }} cm</td>
                             </tr>
                         </tbody>
@@ -94,13 +73,9 @@
                 </div>
             </div>
         </div>
+
+        <footer class="main-footer">Memo Project v1.1</footer>
     </div>
-
-    <footer class="main-footer">
-        <p>Desarrollado por <strong>Guillermo Acosta</strong> | Proyecto IoT 2025</p>
-        <p style="font-size: 0.8rem; opacity: 0.7;">v7.1 - Powered by AWS & ESP8266</p>
-    </footer>
-
     <script src="monitor.js"></script>
 </body>
 </html>
